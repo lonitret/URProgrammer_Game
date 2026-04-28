@@ -15,17 +15,16 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
             return;
         }
 
-        if (QuestManager.Instance != null)
+        if (QuestManager.Instance.isQuestActive && QuestManager.Instance.isTaskCompleted)
         {
-            if (!QuestManager.Instance.isQuestActive)
-            {
-                QuestManager.Instance.AcceptQuest(questText, this);
-                Debug.Log("Квест принят!");
-            }
-            else
-            {
-                Debug.Log("Ты еще не закончил текущее задание!");
-            }
+            QuestManager.Instance.GiveRewardAndFinish();
+            Debug.Log("Работа принята, награда получена!");
+            return;
+        }
+
+        if (!QuestManager.Instance.isQuestActive)
+        {
+            QuestManager.Instance.AcceptQuest(questText, this);
         }
     }
 

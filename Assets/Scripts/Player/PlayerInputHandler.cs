@@ -27,4 +27,15 @@ public class PlayerInputHandler : MonoBehaviour
             interactionDetector?.TryInteract();
         }
     }
+
+    public void OnPause(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            if (GameManager.isPaused)
+                GameManager.Instance.Resume();
+            else
+                GameManager.Instance.Pause();
+        }
+    }
 }

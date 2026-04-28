@@ -8,8 +8,12 @@ public class QuestManager : MonoBehaviour
     [Header("Текущий квест")]
     public string currentQuestDescription = "Нет активных задач";
     public bool isQuestActive = false;
+    public bool isTaskCompleted = false;
 
     private NPCQuestGiver currentGiver;
+
+    private int pendingRep;
+    private float pendingAnger;
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI questTextUI;
@@ -21,36 +25,44 @@ public class QuestManager : MonoBehaviour
 
     void Start()
     {
+        currentQuestDescription = "Нет активных задач";
         UpdateQuestUI();
     }
+
     public void AcceptQuest(string description, NPCQuestGiver giver)
     {
         isQuestActive = true;
+        isTaskCompleted = false;
         currentGiver = giver;
         currentQuestDescription = description;
         UpdateQuestUI();
     }
 
-    public void CompleteQuest(int repReward, float angerReduction)
+    public void MarkTaskAsDone(int rep, float anger)
     {
-        if (!isQuestActive) return;
+        isTaskCompleted = true;
+        pendingRep = rep;
+        pendingAnger = anger;
 
-        isQuestActive = false;
-
-        if (currentGiver != null)
-        {
-            currentGiver.MarkAsCompleted();
-            currentGiver = null;
-        }
-
-        currentQuestDescription = "Нет активных задач";
+        currentQuestDescription = "Вернись к нпс";
         UpdateQuestUI();
+    }
 
+    public void GiveRewardAndFinish()
+    {
         if (StatsManager.Instance != null)
         {
-            StatsManager.Instance.ChangeReputation(repReward);
-            StatsManager.Instance.ChangeAnger(-angerReduction);
+            StatsManager.Instance.ChangeReputation(pendingRep);
+            StatsManager.Instance.ChangeAnger(-pendingAnger);
         }
+
+        isQuestActive = false;
+        isTaskCompleted = false;
+        currentQuestDescription = "Нет активных задач";
+
+        if (currentGiver != null) currentGiver.MarkAsCompleted();
+
+        UpdateQuestUI();
     }
 
     private void UpdateQuestUI()

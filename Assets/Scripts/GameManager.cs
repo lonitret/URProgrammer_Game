@@ -3,31 +3,50 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance;
     public static bool isPaused = false;
 
     [SerializeField] private GameObject pauseMenuUI;
 
-    private void Update()
+    private void Awake()
     {
-        if (Input.GetKeyUp(KeyCode.Escape))
+        if (Instance == null)
         {
-            if (isPaused) Resume();
-            else Pause();
+            Instance = this;
         }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (pauseMenuUI != null)
+        {
+            pauseMenuUI.SetActive(false);
+        }
+
+        Time.timeScale = 1f;
+        isPaused = false;
     }
 
     public void Resume()
     {
-        pauseMenuUI.SetActive(true);
-        Time.timeScale = 0f;
-        isPaused = true;
+        pauseMenuUI.SetActive(false);
+        Time.timeScale = 1f;
+        isPaused = false;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
-    void Pause()
+    public void Pause()
     {
         pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
         isPaused = true;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void LoadMenu()

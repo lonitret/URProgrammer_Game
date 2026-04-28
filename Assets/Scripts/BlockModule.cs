@@ -25,7 +25,7 @@ public class BlockModule : InteractiveModule
 
         if (QuestManager.Instance != null && QuestManager.Instance.isQuestActive)
         {
-            QuestManager.Instance.CompleteQuest(repReward, angerDown);
+            QuestManager.Instance.MarkTaskAsDone(repReward, angerDown);
         }
 
         Debug.Log("Объект приведен в порядок");

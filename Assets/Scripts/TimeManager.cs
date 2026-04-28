@@ -33,6 +33,18 @@ public class TimeManager : MonoBehaviour
         if (timeText != null)
         {
             timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
-        };
+        }
+
+        if (hours >= 18 && GameManager.isPaused == false)
+        {
+            EndWorkDay();
+        }
+    }
+
+    private void EndWorkDay()
+    {
+        Debug.Log("Рабочий день окончен!");
+        // потом тут будут итоги дня (уровня)
+        // GameManager.Instance.ShowEndDaySummary(); 
     }
 }
