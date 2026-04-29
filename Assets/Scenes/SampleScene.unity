@@ -1192,7 +1192,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3622abe24bfdf94bba6303b311eb51c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCQuestGiver
-  questText: "\u041F\u043E\u0447\u0438\u043D\u0438 \u043A\u043E\u0444\u0435\u043C\u0430\u0448\u0438\u043D\u0443!"
+  questText: "\u0421\u0433\u043E\u043D\u044F\u0439 \u043F\u043E\u0447\u0438\u043D\u0438
+    \u043A\u043E\u0444\u0435\u043C\u0430\u0448\u0438\u043D\u0443"
   thanksText: "\u0421\u043F\u0430\u0441\u0438\u0431\u043E \u0437\u0430 \u043F\u043E\u043C\u043E\u0449\u044C!"
 --- !u!212 &477774158
 SpriteRenderer:
@@ -1561,7 +1562,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0069017c644db3c49af2a4db5068080e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StatsManager
-  currentAnger: 10
+  currentAnger: 50
   maxAnger: 100
   angerSlider: {fileID: 405910338}
   dangerOverlay: {fileID: 4896332}
@@ -2296,6 +2297,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
   currentQuestDescription: 
   isQuestActive: 0
+  isTaskCompleted: 0
   questTextUI: {fileID: 1453437977}
 --- !u!4 &1061784917
 Transform:
