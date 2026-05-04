@@ -3,9 +3,9 @@ using UnityEngine;
 public class InteractionDetector : MonoBehaviour
 {
     [SerializeField] private float interactionRadius = 1.5f;
-    [SerializeField] private GameObject hintUI;
 
     private IInteractable currentInteractable;
+    private InteractionHint currentHint;
 
     private void Update()
     {
@@ -14,34 +14,33 @@ public class InteractionDetector : MonoBehaviour
 
     private void DetectInteractable()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(
-            transform.position,
-            interactionRadius
-        );
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, interactionRadius);
 
-        currentInteractable = null;
+        IInteractable foundInteractable = null;
+        InteractionHint foundHint = null;
 
         foreach (var collider in colliders)
         {
             IInteractable interactable = collider.GetComponent<IInteractable>();
-
             if (interactable != null)
             {
                 Actor actor = collider.GetComponent<Actor>();
-                if (actor != null && !CanInteractWithActor(actor))
-                {
-                    continue;
-                }
+                if (actor != null && !CanInteractWithActor(actor)) continue;
 
-                currentInteractable = interactable;
+                foundInteractable = interactable;
+                foundHint = collider.GetComponentInChildren<InteractionHint>(true);
                 break;
             }
         }
 
-        if (hintUI != null)
+        if (currentHint != foundHint)
         {
-            hintUI.SetActive(currentInteractable != null);
+            if (currentHint != null) currentHint.Hide();
+            if (foundHint != null) foundHint.Show();
+            currentHint = foundHint;
         }
+
+        currentInteractable = foundInteractable;
     }
 
     private bool CanInteractWithActor(Actor actor)
