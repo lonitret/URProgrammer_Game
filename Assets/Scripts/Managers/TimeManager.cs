@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -8,10 +9,13 @@ public class TimeManager : MonoBehaviour
     [Header("Настройка игрового времени")]
     public float timeMultiplyer = 60f;
     public int startHour = 9;
+    public int endHour = 18;
 
     private float currentTime;
 
-    [SerializeField] private TextMeshProUGUI timeText;
+    public static event Action<int, int> OnTimeChanged;
+    public static event Action OnWorkDayEnded;
+
     void Awake() => instance = this;
 
     private void Start()
@@ -30,12 +34,9 @@ public class TimeManager : MonoBehaviour
         int hours = Mathf.FloorToInt(currentTime / 3600) % 24;
         int minutes = Mathf.FloorToInt((currentTime % 3600) / 60);
 
-        if (timeText != null)
-        {
-            timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
-        }
+        OnTimeChanged?.Invoke(hours, minutes);
 
-        if (hours >= 18 && GameManager.isPaused == false)
+        if (hours >= endHour && (GameManager.Instance == null || !GameManager.isPaused))
         {
             EndWorkDay();
         }
@@ -44,7 +45,7 @@ public class TimeManager : MonoBehaviour
     private void EndWorkDay()
     {
         Debug.Log("Рабочий день окончен!");
-        // потом тут будут итоги дня (уровня)
-        // GameManager.Instance.ShowEndDaySummary(); 
+        OnWorkDayEnded?.Invoke();
+        this.enabled = false;
     }
 }

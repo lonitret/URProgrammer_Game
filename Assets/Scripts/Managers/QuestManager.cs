@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System;
 
 public class QuestManager : MonoBehaviour
 {
@@ -15,8 +16,7 @@ public class QuestManager : MonoBehaviour
     private int pendingRep;
     private float pendingAnger;
 
-    [Header("UI")]
-    [SerializeField] private TextMeshProUGUI questTextUI;
+    public static event Action<string> OnQuestUpdated;
 
     void Awake()
     {
@@ -25,8 +25,7 @@ public class QuestManager : MonoBehaviour
 
     void Start()
     {
-        currentQuestDescription = "Нет активных задач";
-        UpdateQuestUI();
+        OnQuestUpdated?.Invoke(currentQuestDescription);
     }
 
     public void AcceptQuest(string description, NPCQuestGiver giver)
@@ -35,7 +34,7 @@ public class QuestManager : MonoBehaviour
         isTaskCompleted = false;
         currentGiver = giver;
         currentQuestDescription = description;
-        UpdateQuestUI();
+        OnQuestUpdated?.Invoke(currentQuestDescription);
     }
 
     public void MarkTaskAsDone(int rep, float anger)
@@ -45,7 +44,7 @@ public class QuestManager : MonoBehaviour
         pendingAnger = anger;
 
         currentQuestDescription = "Вернись к нпс";
-        UpdateQuestUI();
+        OnQuestUpdated?.Invoke(currentQuestDescription);
     }
 
     public void GiveRewardAndFinish()
@@ -62,12 +61,12 @@ public class QuestManager : MonoBehaviour
 
         if (currentGiver != null) currentGiver.MarkAsCompleted();
 
-        UpdateQuestUI();
+        OnQuestUpdated?.Invoke(currentQuestDescription);
     }
 
-    private void UpdateQuestUI()
-    {
-        if (questTextUI != null)
-            questTextUI.text = currentQuestDescription;
-    }
+    //private void UpdateQuestUI()
+    //{
+    //    if (questTextUI != null)
+    //        questTextUI.text = currentQuestDescription;
+    //}
 }

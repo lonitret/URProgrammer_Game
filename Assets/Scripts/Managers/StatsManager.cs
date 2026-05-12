@@ -2,34 +2,31 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System;
 
 public class StatsManager : MonoBehaviour
 {
     public static StatsManager Instance { get; private set; }
 
-    [Header("Гнев")]
     public float currentAnger = 0f;
     public float maxAnger = 100f;
-    [SerializeField] private Slider angerSlider;
-    [SerializeField] private Image dangerOverlay;
-
-    [Header("Репутация")]
     public int reputation = 0;
-    [SerializeField] private TextMeshProUGUI reputationText;
+
+    public static event Action<float, float> OnAngerChanged;
+    public static event Action<int> OnReputationChanged;
 
     void Awake() => Instance = this;
 
     void Start()
     {
-        if (dangerOverlay != null) dangerOverlay.gameObject.SetActive(true);
-
-        UpdateUI();
+        OnAngerChanged?.Invoke(currentAnger, maxAnger);
+        OnReputationChanged?.Invoke(reputation);
     }
 
     public void ChangeAnger(float amount)
     {
         currentAnger = Mathf.Clamp(currentAnger + amount, 0, maxAnger);
-        UpdateUI();
+        OnAngerChanged?.Invoke(currentAnger, maxAnger);
 
         if (currentAnger >= maxAnger) GameOver();
     }
@@ -37,34 +34,14 @@ public class StatsManager : MonoBehaviour
     public void ChangeReputation(int amount)
     {
         reputation += amount;
-        UpdateUI();
+        OnReputationChanged?.Invoke(reputation);
     }
 
     public void SetAnger(float value)
     {
         currentAnger = Mathf.Clamp(value, 0, maxAnger);
-        UpdateUI();
+        //UpdateUI();
         if (currentAnger >= maxAnger) GameOver();
-    }
-
-    private void UpdateUI()
-    {
-        if (angerSlider != null)
-        {
-            float targetValue = currentAnger / maxAnger;
-            angerSlider.value = targetValue;
-            Debug.Log($"Slider updated to: {targetValue}");
-        }
-
-        if (reputationText != null) reputationText.text = $"Репутация: {reputation}";
-
-        if (dangerOverlay != null)
-        {
-            var color = dangerOverlay.color;
-            color.a = (currentAnger / maxAnger) * 0.5f;
-            dangerOverlay.color = color;
-        }
-
     }
 
     private void GameOver()

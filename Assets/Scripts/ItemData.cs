@@ -5,6 +5,10 @@ public class ItemData : ScriptableObject
 {
     public string itemName;
     public Sprite icon;
+
     [TextArea] public string description;
-    public bool isStackable;
+
+    public bool isCoffee;
+    public float stressRelief;
+    public bool isTool;
 }
