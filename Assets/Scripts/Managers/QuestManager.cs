@@ -10,6 +10,7 @@ public class QuestManager : MonoBehaviour
     public string currentQuestDescription = "Нет активных задач";
     public bool isQuestActive = false;
     public bool isTaskCompleted = false;
+    public bool isCoffeeMachineRepaired = false;
 
     private NPCQuestGiver currentGiver;
 
@@ -55,6 +56,7 @@ public class QuestManager : MonoBehaviour
             StatsManager.Instance.ChangeAnger(-pendingAnger);
         }
 
+        isCoffeeMachineRepaired = true;
         isQuestActive = false;
         isTaskCompleted = false;
         currentQuestDescription = "Нет активных задач";

@@ -1,23 +1,38 @@
 using UnityEngine;
+using System;
 
 public class InteractionDetector : MonoBehaviour
 {
     [SerializeField] private float interactionRadius = 1.5f;
 
+    public static event Action<Transform, string> OnInteractableFound;
+
     private IInteractable currentInteractable;
-    private InteractionHint currentHint;
+    private Transform currentTarget;
 
     private void Update()
     {
         DetectInteractable();
     }
 
+    public void TryInteract()
+    {
+        if (currentInteractable != null)
+        {
+            Debug.Log("Взаимодействие с: " + currentTarget.name);
+            currentInteractable.Interact();
+        }
+        else
+        {
+            Debug.Log("Не с чем взаимодействовать.");
+        }
+    }
+
     private void DetectInteractable()
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, interactionRadius);
-
         IInteractable foundInteractable = null;
-        InteractionHint foundHint = null;
+        Transform foundTarget = null;
 
         foreach (var collider in colliders)
         {
@@ -28,38 +43,37 @@ public class InteractionDetector : MonoBehaviour
                 if (actor != null && !CanInteractWithActor(actor)) continue;
 
                 foundInteractable = interactable;
-                foundHint = collider.GetComponentInChildren<InteractionHint>(true);
+                foundTarget = collider.transform;
                 break;
             }
         }
 
-        if (currentHint != foundHint)
+        if (currentTarget != foundTarget)
         {
-            if (currentHint != null) currentHint.Hide();
-            if (foundHint != null) foundHint.Show();
-            currentHint = foundHint;
-        }
+            currentTarget = foundTarget;
+            currentInteractable = foundInteractable;
 
-        currentInteractable = foundInteractable;
+            string hintText = "";
+            if (currentTarget != null)
+            {
+                var actor = currentTarget.GetComponent<Actor>();
+                hintText = (actor != null) ? actor.GetInteractionText() : "[E] Взаимодействовать";
+            }
+
+            OnInteractableFound?.Invoke(currentTarget, hintText);
+        }
     }
 
     private bool CanInteractWithActor(Actor actor)
     {
         if (!actor.needsQuest) return true;
 
-        return QuestManager.Instance != null && QuestManager.Instance.isQuestActive;
+        bool permanentDone = QuestManager.Instance != null && QuestManager.Instance.isCoffeeMachineRepaired;
+        return permanentDone || (QuestManager.Instance != null && QuestManager.Instance.isQuestActive);
     }
-
-    public void TryInteract()
-    {
-        if (currentInteractable != null)
-        {
-            Debug.Log("Объект найден. Взаимодействие");
-            currentInteractable.Interact();
-        }
-        else
-        {
-            Debug.Log("Интерактивный объект не найден.");
-        }
-    }
+    //private void OnDrawGizmosSelected()
+    //{
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawWireSphere(transform.position, interactionRadius);
+    //}
 }

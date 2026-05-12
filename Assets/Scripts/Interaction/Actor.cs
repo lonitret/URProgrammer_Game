@@ -8,24 +8,35 @@ public class Actor : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        Debug.Log("Actor: попытка взаимодействи€");
+        bool permanentDone = QuestManager.Instance != null && QuestManager.Instance.isCoffeeMachineRepaired;
+        bool taskDone = QuestManager.Instance != null && QuestManager.Instance.isTaskCompleted;
 
-        if (needsQuest && (QuestManager.Instance == null || !QuestManager.Instance.isQuestActive))
+        if (needsQuest && !permanentDone && !taskDone)
         {
-            Debug.Log("я не буду это чинить просто так.");
-            return;
+            if (QuestManager.Instance == null || !QuestManager.Instance.isQuestActive)
+            {
+                Debug.Log("я не буду это чинить просто так.");
+                return;
+            }
         }
 
         foreach (var module in modules)
         {
             if (module != null && module.IsActive)
             {
-                Debug.Log($"Actor: выполн€етс€ модуль {module.GetType().Name}");
                 module.Interact();
                 return;
             }
         }
+    }
 
-        Debug.LogWarning("Actor: активный модуль не найден!");
+    public string GetInteractionText()
+    {
+        bool permanentDone = QuestManager.Instance != null && QuestManager.Instance.isCoffeeMachineRepaired;
+        bool taskDone = QuestManager.Instance != null && QuestManager.Instance.isTaskCompleted;
+
+        if (permanentDone || taskDone || !needsQuest) return "[E] ¬з€ть кофе";
+
+        return "[E] ѕочинить";
     }
 }
