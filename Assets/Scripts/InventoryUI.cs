@@ -9,6 +9,15 @@ public class InventoryUI : MonoBehaviour
 
     private int selectedSlotIndex = 0;
     private List<UI_InventorySlot> uiSlots = new List<UI_InventorySlot>();
+    private void OnEnable()
+    {
+        InventoryManager.OnInventoryChanged += Refresh;
+    }
+
+    private void OnDisable()
+    {
+        InventoryManager.OnInventoryChanged -= Refresh;
+    }
 
     void Start()
     {

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: CoffeeItem
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Coffee
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 820b62a487355af4dbaf53d8990db327, type: 3}
   description: a cup of coffee
   isCoffee: 1
-  stressRelief: 0
+  stressRelief: 10
   isTool: 0

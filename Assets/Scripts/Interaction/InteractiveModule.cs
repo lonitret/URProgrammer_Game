@@ -9,4 +9,9 @@ public abstract class InteractiveModule : MonoBehaviour
     public virtual void Deactivate() => isActive = false;
 
     public abstract void Interact();
+
+    public virtual bool IsBroken()
+    {
+        return false;
+    }
 }

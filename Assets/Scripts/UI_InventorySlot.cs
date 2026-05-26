@@ -4,22 +4,27 @@ using TMPro;
 
 public class UI_InventorySlot : MonoBehaviour
 {
-    public Image icon;
+    public Image iconDisplay;
     public TextMeshProUGUI countText;
     public GameObject selectionFrame;
 
     public void Render(InventoryManager.InventorySlot slot)
     {
-        if (slot != null && slot.item != null)
+        if (slot != null && slot.item != null && slot.count > 0)
         {
-            icon.sprite = slot.item.icon;
-            icon.enabled = true;
-            countText.text = slot.count > 1 ? slot.count.ToString() : "";
+            iconDisplay.sprite = slot.item.icon;
+            iconDisplay.enabled = true;
+
+            if (countText != null)
+            {
+                countText.text = slot.count > 1 ? slot.count.ToString() : "";
+                countText.gameObject.SetActive(slot.count > 1);
+            }
         }
         else
         {
-            icon.enabled = false;
-            countText.text = "";
+            if (iconDisplay != null) iconDisplay.enabled = false;
+            if (countText != null) countText.gameObject.SetActive(false);
         }
     }
 

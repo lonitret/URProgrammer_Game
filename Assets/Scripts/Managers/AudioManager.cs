@@ -155,4 +155,32 @@ public class AudioManager : MonoBehaviour
         }
         musicSource.pitch = Mathf.Lerp(1.0f, 1.15f, smoothProgress);
     }
+    public void PauseAllSounds()
+    {
+        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        foreach (AudioSource audioSource in allAudioSources)
+        {
+            if (audioSource.isPlaying)
+            {
+                audioSource.Pause();
+            }
+        }
+    }
+
+    public void ResumeAllSounds()
+    {
+        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        foreach (AudioSource audioSource in allAudioSources)
+        {
+            audioSource.UnPause();
+        }
+    }
+    public void StopAllSounds()
+    {
+        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        foreach (AudioSource audioSource in allAudioSources)
+        {
+            audioSource.Stop();
+        }
+    }
 }

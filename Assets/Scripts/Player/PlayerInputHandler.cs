@@ -14,16 +14,30 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnMove(InputAction.CallbackContext context)
     {
+        if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive)
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
         moveInput = context.ReadValue<Vector2>();
     }
 
     public void OnInteract(InputAction.CallbackContext context)
     {
-        Debug.Log("OnInteract вызван, Phase: " + context.phase);
-
         if (context.performed)
         {
-            Debug.Log("Нажата клавиша E");
+            if (DialogueManager.Instance != null && DialogueManager.Instance.IsWaitingForChoice)
+            {
+                return;
+            }
+
+            if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive)
+            {
+                DialogueManager.Instance.DisplayNextSentence();
+                return;
+            }
+
             interactionDetector?.TryInteract();
         }
     }
@@ -36,6 +50,19 @@ public class PlayerInputHandler : MonoBehaviour
                 GameManager.Instance.Resume();
             else
                 GameManager.Instance.Pause();
+        }
+    }
+
+    public void OnUseItem(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            Debug.Log("Вызвана команда использования предмета");
+
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.UseSelectedItem();
+            }
         }
     }
 }

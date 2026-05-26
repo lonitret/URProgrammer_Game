@@ -35,4 +35,9 @@ public class BlockModule : InteractiveModule
         else
             Debug.LogError("Next Module не назначен!");
     }
+
+    public override bool IsBroken()
+    {
+        return isActive;
+    }
 }

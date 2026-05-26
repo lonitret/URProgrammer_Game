@@ -46,5 +46,14 @@ public class StatsManager : MonoBehaviour
     private void GameOver()
     {
         Debug.Log("Нервный срыв! Игра окончена.");
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.GameOver();
+        }
+        else
+        {
+            Debug.LogError("GameManager не найден на сцене.");
+        }
     }
 }
