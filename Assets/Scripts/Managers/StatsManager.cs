@@ -40,13 +40,11 @@ public class StatsManager : MonoBehaviour
     public void SetAnger(float value)
     {
         currentAnger = Mathf.Clamp(value, 0, maxAnger);
-        //UpdateUI();
         if (currentAnger >= maxAnger) GameOver();
     }
 
     private void GameOver()
     {
         Debug.Log("Нервный срыв! Игра окончена.");
-        // Здесь можно вызвать SceneManager.LoadScene для перезапуска
     }
 }

@@ -9,6 +9,8 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        AudioManager.Instance.PlaySFX(SoundType.NPCVoice);
+
         if (isQuestCompleted)
         {
             Debug.Log(thanksText);

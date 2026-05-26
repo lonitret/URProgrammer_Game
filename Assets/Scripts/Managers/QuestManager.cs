@@ -65,10 +65,4 @@ public class QuestManager : MonoBehaviour
 
         OnQuestUpdated?.Invoke(currentQuestDescription);
     }
-
-    //private void UpdateQuestUI()
-    //{
-    //    if (questTextUI != null)
-    //        questTextUI.text = currentQuestDescription;
-    //}
 }

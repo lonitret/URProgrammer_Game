@@ -71,9 +71,4 @@ public class InteractionDetector : MonoBehaviour
         bool permanentDone = QuestManager.Instance != null && QuestManager.Instance.isCoffeeMachineRepaired;
         return permanentDone || (QuestManager.Instance != null && QuestManager.Instance.isQuestActive);
     }
-    //private void OnDrawGizmosSelected()
-    //{
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireSphere(transform.position, interactionRadius);
-    //}
 }

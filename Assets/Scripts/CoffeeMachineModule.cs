@@ -8,5 +8,6 @@ public class CoffeeMachineModule : InteractiveModule
         if (!isActive) return;
 
         Debug.Log("получаем чашку кофе");
+        AudioManager.Instance.PlaySFX(SoundType.CoffeeMachine);
     }
 }
