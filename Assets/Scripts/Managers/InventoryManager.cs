@@ -2,38 +2,31 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 public class InventoryManager : MonoBehaviour
 {
     public List<InventorySlot> slots = new List<InventorySlot>();
     public int inventorySize = 20;
-
     public static InventoryManager Instance;
     void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
-
     public static event Action OnInventoryChanged;
-
     [System.Serializable]
     public class InventorySlot
     {
         public ItemData item;
         public int count;
-
         public InventorySlot(ItemData newItem, int amount)
         {
             item = newItem;
             count = amount;
         }
     }
-
     public bool AddItem(ItemData item, int amount = 1)
     {
         if (item == null) return false;
-
         foreach (var slot in slots)
         {
             if (slot.item == item)
@@ -43,18 +36,15 @@ public class InventoryManager : MonoBehaviour
                 return true;
             }
         }
-
         if (slots.Count < inventorySize)
         {
             slots.Add(new InventorySlot(item, amount));
             OnInventoryChanged?.Invoke();
             return true;
         }
-
         Debug.Log("Инвентарь заполнен!");
         return false;
     }
-
     public bool HasItem(ItemData item)
     {
         foreach (var slot in slots)
@@ -63,7 +53,6 @@ public class InventoryManager : MonoBehaviour
         }
         return false;
     }
-
     public void RemoveItem(ItemData item, int amount = 1)
     {
         for (int i = 0; i < slots.Count; i++)
@@ -80,7 +69,6 @@ public class InventoryManager : MonoBehaviour
             }
         }
     }
-
     public void OnUseItem(InputAction.CallbackContext context)
     {
         if (context.started)
@@ -88,7 +76,6 @@ public class InventoryManager : MonoBehaviour
             UseSelectedItem();
         }
     }
-
     public void UseSelectedItem()
     {
         foreach (var slot in slots)
@@ -96,17 +83,19 @@ public class InventoryManager : MonoBehaviour
             if (slot.item != null && slot.item.isCoffee)
             {
                 Debug.Log($"Выпили {slot.item.itemName}. Стресс снижен на {slot.item.stressRelief}!");
-
                 if (StatsManager.Instance != null)
                 {
                     StatsManager.Instance.ChangeAnger(-slot.item.stressRelief);
                 }
-
+                PlayerMovement player = FindObjectOfType<PlayerMovement>();
+                if (player != null)
+                {
+                    player.ApplyTemporarySpeedBoost(slot.item.speedBoostMultiplier, slot.item.speedBoostDuration);
+                }
                 RemoveItem(slot.item, 1);
                 return;
             }
         }
-
         Debug.Log("У вас нет кофе в инвентаре, чтобы его выпить!");
     }
 }

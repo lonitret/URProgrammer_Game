@@ -1,5 +1,5 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 public class InteractionDetector : MonoBehaviour
 {
@@ -56,8 +56,21 @@ public class InteractionDetector : MonoBehaviour
             string hintText = "";
             if (currentTarget != null)
             {
-                var actor = currentTarget.GetComponent<Actor>();
-                hintText = (actor != null) ? actor.GetInteractionText() : "[E] Взаимодействовать";
+                Actor actor = currentTarget.GetComponent<Actor>();
+                ItemPickup itemPickup = currentTarget.GetComponent<ItemPickup>();
+
+                if (actor != null)
+                {
+                    hintText = actor.GetInteractionText();
+                }
+                else if (itemPickup != null)
+                {
+                    hintText = itemPickup.GetInteractionText();
+                }
+                else
+                {
+                    hintText = "[E] Взаимодействовать";
+                }
             }
 
             OnInteractableFound?.Invoke(currentTarget, hintText);
@@ -68,7 +81,9 @@ public class InteractionDetector : MonoBehaviour
     {
         if (!actor.needsQuest) return true;
 
-        bool permanentDone = QuestManager.Instance != null && QuestManager.Instance.isCoffeeMachineRepaired;
+        bool permanentDone = QuestManager.Instance != null
+            && QuestManager.Instance.isCoffeeMachineRepaired
+            && actor.CanInteractAfterCoffeeUnlock;
         return permanentDone || (QuestManager.Instance != null && QuestManager.Instance.isQuestActive);
     }
 }

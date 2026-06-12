@@ -19,7 +19,7 @@ public class GameUIController : MonoBehaviour
     {
         StatsManager.OnAngerChanged += UpdateAnger;
         StatsManager.OnReputationChanged += UpdateReputation;
-        QuestManager.OnQuestUpdated += UpdateQuest;
+        QuestManager.OnQuestStateChanged += UpdateQuest;
         TimeManager.OnTimeChanged += UpdateTimeDisplay;
     }
 
@@ -27,7 +27,7 @@ public class GameUIController : MonoBehaviour
     {
         StatsManager.OnAngerChanged -= UpdateAnger;
         StatsManager.OnReputationChanged -= UpdateReputation;
-        QuestManager.OnQuestUpdated -= UpdateQuest;
+        QuestManager.OnQuestStateChanged -= UpdateQuest;
         TimeManager.OnTimeChanged -= UpdateTimeDisplay;
     }
 
@@ -42,8 +42,31 @@ public class GameUIController : MonoBehaviour
         }
     }
 
-    private void UpdateReputation(int amount) => reputationText.text = $"Репутация: {amount}";
-    private void UpdateQuest(string desc) => questText.text = desc;
+    private void UpdateReputation(int amount)
+    {
+        if (reputationText != null)
+        {
+            reputationText.text = $"Репутация: {amount}";
+        }
+    }
+
+    private void UpdateQuest(QuestManager.QuestUiState state)
+    {
+        if (questText == null) return;
+
+        if (!state.HasActiveQuest)
+        {
+            questText.text = $"Нет активных задач\n{state.CurrentStep}";
+            return;
+        }
+
+        questText.text =
+            $"{state.Title}\n" +
+            $"\nОт: {state.GiverName}\n" +
+            $"\nСтатус: {state.Status}\n" +
+            $"\nШаг: {state.CurrentStep}\n" +
+            $"\nПрогресс: {state.CompletedSteps}/{state.TotalSteps}";
+    }
 
     private void UpdateTimeDisplay(int hours, int minutes)
     {

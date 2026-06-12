@@ -10,5 +10,7 @@ public class ItemData : ScriptableObject
 
     public bool isCoffee;
     public float stressRelief;
+    public float speedBoostMultiplier = 1f;
+    public float speedBoostDuration = 0f;
     public bool isTool;
 }
