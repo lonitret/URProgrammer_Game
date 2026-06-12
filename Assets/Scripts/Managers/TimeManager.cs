@@ -5,7 +5,7 @@ public class TimeManager : MonoBehaviour
 {
     public static TimeManager instance;
     [Header("Настройка игрового времени")]
-    public float timeMultiplyer = 60f;
+    public float timeMultiplyer = 75f;
     public int startHour = 9;
     public int endHour = 18;
     private float currentTime;

@@ -19,7 +19,7 @@ public class WorldHintHandler : MonoBehaviour
 
     private void HandleHint(Transform target, string text)
     {
-        if (target != null)
+        if (target != null && !string.IsNullOrWhiteSpace(text))
         {
             transform.position = target.position + offset;
             hintText.text = text;

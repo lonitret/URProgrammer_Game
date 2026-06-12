@@ -11,21 +11,21 @@ public class Actor : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        bool hasActiveQuest = QuestManager.Instance != null && QuestManager.Instance.isQuestActive;
+        bool isCurrentQuestTarget = QuestManager.Instance != null && QuestManager.Instance.IsCurrentQuestTarget(this);
         bool permanentDone = QuestManager.Instance != null
             && QuestManager.Instance.isCoffeeMachineRepaired
             && canInteractAfterCoffeeUnlock;
-        bool isCurrentQuestTarget = QuestManager.Instance != null && QuestManager.Instance.IsCurrentQuestTarget(this);
-        bool taskDone = QuestManager.Instance != null && QuestManager.Instance.isTaskCompleted && isCurrentQuestTarget;
+
+        if (needsQuest && hasActiveQuest && !isCurrentQuestTarget)
+        {
+            Debug.Log("Это не цель текущего задания.");
+            return;
+        }
 
         if (needsQuest && !permanentDone && !isCurrentQuestTarget)
         {
-            if (QuestManager.Instance == null || !QuestManager.Instance.isQuestActive)
-            {
-                Debug.Log("Я не буду это чинить просто так.");
-                return;
-            }
-
-            Debug.Log("Это не цель текущего задания.");
+            Debug.Log("Я не буду это чинить просто так.");
             return;
         }
 
@@ -43,16 +43,18 @@ public class Actor : MonoBehaviour, IInteractable
 
     public string GetInteractionText()
     {
+        bool hasActiveQuest = QuestManager.Instance != null && QuestManager.Instance.isQuestActive;
+        bool isCurrentQuestTarget = QuestManager.Instance != null && QuestManager.Instance.IsCurrentQuestTarget(this);
+        bool taskDone = QuestManager.Instance != null && QuestManager.Instance.isTaskCompleted && isCurrentQuestTarget;
         bool permanentDone = QuestManager.Instance != null
             && QuestManager.Instance.isCoffeeMachineRepaired
             && canInteractAfterCoffeeUnlock;
-        bool isCurrentQuestTarget = QuestManager.Instance != null && QuestManager.Instance.IsCurrentQuestTarget(this);
-        bool taskDone = QuestManager.Instance != null && QuestManager.Instance.isTaskCompleted && isCurrentQuestTarget;
 
-        if (taskDone) return "[E] Задание выполнено";
+        if (taskDone) return "[E] Вернуться к NPC";
+        if (needsQuest && hasActiveQuest && !isCurrentQuestTarget) return "";
         if (permanentDone) return "[E] Взять кофе";
         if (!needsQuest) return "[E] Взаимодействовать";
 
-        return "[E] Починить";
+        return "[E] Починить объект";
     }
 }

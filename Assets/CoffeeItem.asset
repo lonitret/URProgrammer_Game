@@ -16,5 +16,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 820b62a487355af4dbaf53d8990db327, type: 3}
   description: a cup of coffee
   isCoffee: 1
-  stressRelief: 10
+  stressRelief: 15
+  speedBoostMultiplier: 1.25
+  speedBoostDuration: 5
   isTool: 0

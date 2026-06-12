@@ -30,28 +30,28 @@ public class BlockModule : InteractiveModule
     [SerializeField] private float repairTime = 3f;
     [SerializeField] private InteractiveModule nextModule;
 
-    [Header("Мини-игра ремонта")]
+    [Header("РњРёРЅРё-РёРіСЂР° СЂРµРјРѕРЅС‚Р°")]
     [SerializeField] private bool useMinigame = true;
     [SerializeField] private RepairMinigameType minigameType = RepairMinigameType.SequenceKeys;
-    [SerializeField] private float minigameTimeLimit = 8f;
-    [SerializeField] private float failAngerPenalty = 8f;
+    [SerializeField] private float minigameTimeLimit = 10f;
+    [SerializeField] private float failAngerPenalty = 12f;
 
-    [Header("Последовательность клавиш")]
+    [Header("РџРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РєР»Р°РІРёС€")]
     [SerializeField] private int sequenceLength = 4;
-    [Header("Провода")]
+    [Header("РџСЂРѕРІРѕРґР°")]
     [SerializeField] private int wirePairCount = 4;
 
-    [Header("Ползунок")]
+    [Header("РџРѕР»Р·СѓРЅРѕРє")]
     [SerializeField] private float timingMarkerSpeed = 1.4f;
     [SerializeField, Range(0.05f, 0.5f)] private float timingGreenZoneSize = 0.22f;
 
-    [Header("Нужный предмет")]
+    [Header("РќСѓР¶РЅС‹Р№ РїСЂРµРґРјРµС‚")]
     [SerializeField] private ItemData requiredItem;
     [SerializeField] private bool consumeRequiredItem = true;
 
-    [Header("Награда")]
-    [SerializeField] private int repReward = 10;
-    [SerializeField] private float angerDown = 5f;
+    [Header("РќР°РіСЂР°РґР°")]
+    [SerializeField] private int repReward = 15;
+    [SerializeField] private float angerDown = 8f;
 
     private enum RepairKey { W, A, S, D }
 
@@ -63,10 +63,10 @@ public class BlockModule : InteractiveModule
     private float timingDirection = 1f;
     private bool isRepairing;
     private bool isMinigameRunning;
-    private string titleText = "Ремонт";
+    private string titleText = "Р РµРјРѕРЅС‚";
     private string instructionText = "";
     private string feedbackMessage = "";
-    private readonly string[] wirePool = { "Красный", "Синий", "Желтый", "Зеленый", "Белый", "Черный" };
+    private readonly string[] wirePool = { "РљСЂР°СЃРЅС‹Р№", "РЎРёРЅРёР№", "Р–РµР»С‚С‹Р№", "Р—РµР»РµРЅС‹Р№", "Р‘РµР»С‹Р№", "Р§РµСЂРЅС‹Р№" };
     private string[] leftWires;
     private string[] rightWires;
     private bool[] connectedWires;
@@ -98,9 +98,20 @@ public class BlockModule : InteractiveModule
     {
         if (!isActive || isRepairing || isMinigameRunning) return;
 
+        Actor owner = GetComponentInParent<Actor>();
+        if (owner != null
+            && owner.needsQuest
+            && QuestManager.Instance != null
+            && QuestManager.Instance.isQuestActive
+            && !QuestManager.Instance.IsCurrentQuestTarget(owner))
+        {
+            Debug.Log("This repair module is not the current quest target.");
+            return;
+        }
+
         if (!HasRequiredItem())
         {
-            Debug.Log("Не хватает нужного предмета.");
+            Debug.Log("РќРµ С…РІР°С‚Р°РµС‚ РЅСѓР¶РЅРѕРіРѕ РїСЂРµРґРјРµС‚Р°.");
             return;
         }
 
@@ -151,7 +162,7 @@ public class BlockModule : InteractiveModule
         {
             ConsumeRequiredItem();
             MarkQuestTaskAsDone();
-            feedbackMessage = "Готово";
+            feedbackMessage = "Р“РѕС‚РѕРІРѕ";
             UpdateMinigameUi();
             yield return new WaitForSeconds(0.35f);
             SetMinigamePanel(false);
@@ -159,9 +170,9 @@ public class BlockModule : InteractiveModule
         }
         else
         {
-            feedbackMessage = "Провал";
+            feedbackMessage = "РџСЂРѕРІР°Р»";
             UpdateMinigameUi();
-            Debug.Log("Ремонт провален.");
+            Debug.Log("Р РµРјРѕРЅС‚ РїСЂРѕРІР°Р»РµРЅ.");
 
             if (StatsManager.Instance != null)
             {
@@ -183,11 +194,11 @@ public class BlockModule : InteractiveModule
             if (WasPressed(expectedKey))
             {
                 sequenceIndex++;
-                feedbackMessage = "Верно";
+                feedbackMessage = "Р’РµСЂРЅРѕ";
             }
             else if (WasAnyRepairKeyPressed())
             {
-                feedbackMessage = "Не та клавиша";
+                feedbackMessage = "РќРµ С‚Р° РєР»Р°РІРёС€Р°";
                 UpdateMinigameUi();
                 yield return new WaitForSeconds(0.35f);
                 onFinished?.Invoke(false);
@@ -222,7 +233,7 @@ public class BlockModule : InteractiveModule
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 bool hit = Mathf.Abs(timingMarkerPosition - 0.5f) <= timingGreenZoneSize * 0.5f;
-                feedbackMessage = hit ? "Попадание" : "Мимо";
+                feedbackMessage = hit ? "РџРѕРїР°РґР°РЅРёРµ" : "РњРёРјРѕ";
                 UpdateMinigameUi();
                 yield return new WaitForSeconds(0.25f);
                 onFinished?.Invoke(hit);
@@ -294,12 +305,12 @@ public class BlockModule : InteractiveModule
         isRepairing = true;
         Deactivate();
 
-        Debug.Log("Начат ремонт.");
+        Debug.Log("РќР°С‡Р°С‚ СЂРµРјРѕРЅС‚.");
         yield return new WaitForSeconds(repairTime);
 
         MarkQuestTaskAsDone();
 
-        Debug.Log("Объект приведен в порядок.");
+        Debug.Log("РћР±СЉРµРєС‚ РїСЂРёРІРµРґРµРЅ РІ РїРѕСЂСЏРґРѕРє.");
 
         if (nextModule != null)
         {
@@ -316,22 +327,22 @@ public class BlockModule : InteractiveModule
 
     private void ShowSequenceMode()
     {
-        titleText = "Ремонт";
-        instructionText = "Нажми клавиши по порядку";
+        titleText = "Р РµРјРѕРЅС‚";
+        instructionText = "РќР°Р¶РјРё РєР»Р°РІРёС€Рё РїРѕ РїРѕСЂСЏРґРєСѓ";
         UpdateMinigameUi();
     }
 
     private void ShowTimingMode()
     {
-        titleText = "Ремонт";
-        instructionText = "Нажми Space в зеленой зоне";
+        titleText = "Р РµРјРѕРЅС‚";
+        instructionText = "РќР°Р¶РјРё Space РІ Р·РµР»РµРЅРѕР№ Р·РѕРЅРµ";
         UpdateMinigameUi();
     }
 
     private void ShowWireMode()
     {
-        titleText = "Провода";
-        instructionText = "Выбери провод слева, затем такой же справа";
+        titleText = "РџСЂРѕРІРѕРґР°";
+        instructionText = "Р’С‹Р±РµСЂРё РїСЂРѕРІРѕРґ СЃР»РµРІР°, Р·Р°С‚РµРј С‚Р°РєРѕР№ Р¶Рµ СЃРїСЂР°РІР°";
         UpdateMinigameUi();
     }
 
@@ -445,7 +456,7 @@ public class BlockModule : InteractiveModule
         if (!isMinigameRunning || minigameType != RepairMinigameType.WireConnect) return;
         if (selectedLeftWire < 0)
         {
-            feedbackMessage = "Сначала выбери провод слева";
+            feedbackMessage = "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРё РїСЂРѕРІРѕРґ СЃР»РµРІР°";
             UpdateMinigameUi();
             return;
         }
@@ -457,12 +468,12 @@ public class BlockModule : InteractiveModule
         {
             connectedWires[selectedLeftWire] = true;
             selectedLeftWire = -1;
-            feedbackMessage = "Соединено";
+            feedbackMessage = "РЎРѕРµРґРёРЅРµРЅРѕ";
         }
         else
         {
             selectedLeftWire = -1;
-            feedbackMessage = "Не тот провод";
+            feedbackMessage = "РќРµ С‚РѕС‚ РїСЂРѕРІРѕРґ";
         }
 
         UpdateMinigameUi();

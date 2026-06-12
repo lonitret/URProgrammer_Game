@@ -16,12 +16,12 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
     [SerializeField] private Dialogue postQuestDialogue;
 
     [Header("Настройки штрафа за отказ")]
-    [SerializeField] private int repPenalty = 5;
-    [SerializeField] private float angerPenalty = 10f;
+    [SerializeField] private int repPenalty = 8;
+    [SerializeField] private float angerPenalty = 12f;
 
     [Header("Награда за выполнение")]
-    [SerializeField] private int repReward = 10;
-    [SerializeField] private float angerDown = 5f;
+    [SerializeField] private int repReward = 15;
+    [SerializeField] private float angerDown = 8f;
 
     [Header("Если квест: принести предмет")]
     [SerializeField] private ItemData requiredItem;
@@ -138,6 +138,19 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
     public void MarkAsCompleted()
     {
         isCompleted = true;
+    }
+
+    public string GetInteractionText()
+    {
+        if (QuestManager.Instance != null && QuestManager.Instance.isQuestActive)
+        {
+            if (!QuestManager.Instance.IsCurrentQuestGiver(this)) return "";
+            if (QuestManager.Instance.isTaskCompleted) return "[E] Сдать задание";
+
+            return "[E] Поговорить";
+        }
+
+        return "[E] Поговорить";
     }
 
     private void SetupDialogueName(Dialogue dialogue)

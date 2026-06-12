@@ -7,7 +7,7 @@ using System;
 public class StatsManager : MonoBehaviour
 {
     public static StatsManager Instance { get; private set; }
-    public float currentAnger = 0f;
+    public float currentAnger = 20f;
     public float maxAnger = 100f;
     public int reputation = 0;
     public static event Action<float, float> OnAngerChanged;
