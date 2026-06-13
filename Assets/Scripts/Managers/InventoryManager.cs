@@ -27,6 +27,16 @@ public class InventoryManager : MonoBehaviour
     public bool AddItem(ItemData item, int amount = 1)
     {
         if (item == null) return false;
+        if (item.isCoffee && HasItem(item))
+        {
+            Debug.Log("В инвентаре уже есть кофе.");
+            return false;
+        }
+
+        if (item.isCoffee)
+        {
+            amount = 1;
+        }
         foreach (var slot in slots)
         {
             if (slot.item == item)

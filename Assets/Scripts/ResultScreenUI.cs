@@ -42,6 +42,7 @@ public class ResultScreenUI : MonoBehaviour
     private void ShowResult(GameManager.RunResult result)
     {
         SetVisible(true);
+        PlayResultSound(result);
 
         if (titleText != null) titleText.text = BuildTitle(result);
         if (summaryText != null) summaryText.text = BuildSummary(result);
@@ -49,6 +50,16 @@ public class ResultScreenUI : MonoBehaviour
         if (angerText != null) angerText.text = $"Стресс: {result.Anger:0} / {result.MaxAnger:0}";
         if (questsText != null) questsText.text = $"Квесты: {result.CompletedQuests} / {result.RequiredQuests}";
         if (timeText != null) timeText.text = $"Время: {result.Hour:00}:{result.Minute:00}";
+    }
+
+    private void PlayResultSound(GameManager.RunResult result)
+    {
+        if (AudioManager.Instance == null) return;
+
+        AudioManager.Instance.PlaySFX(
+            result.Reason == GameManager.RunEndReason.LevelComplete
+                ? SoundType.LevelComplete
+                : SoundType.GameOver);
     }
 
     private string BuildTitle(GameManager.RunResult result)
@@ -124,11 +135,14 @@ public class ResultScreenUI : MonoBehaviour
         if (angerPercent <= 0.25f) return "Стресс под контролем:\nты почти выглядишь как человек, который выспался.";
         if (angerPercent <= 0.55f) return "Стресс заметен, но рабочий день не победил тебя окончательно.";
 
-        return "Стресс высокий:\nеще один вопрос про принтер, и монитор мог бы не выжить.";
+        return "Стресс высокий: еще один вопрос про принтер, и монитор мог бы не выжить.";
+
+
     }
 
     private string GetReputationComment(GameManager.RunResult result)
     {
+
         if (result.Reputation >= 40) return "Репутация выросла:\nколлеги теперь уверены, что ты умеешь вообще все.";
         if (result.Reputation >= 20) return "Репутация в плюсе:\nофис доволен, хотя спасибо сказали не все.";
 

@@ -44,7 +44,7 @@ public class TutorialManager : MonoBehaviour
         new TutorialStep
         {
             title = "Предметы и стресс",
-            body = "Следи за репутацией и уровнем стресса. Кофе можно использовать из инвентаря, когда он появится по кнопке F."
+            body = "Следи за репутацией и уровнем стресса. Кофе можно использовать из инвентаря, когда он появится, по кнопке F."
         }
     };
 
@@ -94,6 +94,8 @@ public class TutorialManager : MonoBehaviour
     {
         if (!isOpen) return;
 
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
+
         if (currentStepIndex >= steps.Length - 1)
         {
             CloseTutorial();
@@ -107,6 +109,8 @@ public class TutorialManager : MonoBehaviour
     private void CloseTutorial()
     {
         if (!isOpen) return;
+
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
 
         isOpen = false;
         if (panel != null) panel.SetActive(false);

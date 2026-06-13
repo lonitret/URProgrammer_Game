@@ -28,12 +28,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject pauseMenuUI;
     [SerializeField] private GameObject gameOverMenuUI;
     [SerializeField] private bool finishLevelAfterQuest = true;
-    [SerializeField] private int questsRequiredToFinishLevel = 1;
-    [SerializeField] private string levelCompleteMessage = "День пройден";
+    [SerializeField] private int questsRequiredToFinishLevel = 3;
+    [SerializeField] private string levelCompleteMessage = "Задание выполнено!";
     [SerializeField] private string gameOverMessage = "Нервный срыв!";
     [SerializeField] private string dayEndedMessage = "Рабочий день окончен!";
 
-    private int completedQuestCount;
     private bool isMinigameOpen;
 
     private void Awake()
@@ -60,13 +59,13 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        QuestManager.OnQuestCompleted += HandleQuestCompleted;
+        QuestManager.OnQuestProgressionChanged += HandleQuestProgressionChanged;
         BlockModule.OnMinigameVisibilityChanged += HandleMinigameVisibilityChanged;
     }
 
     private void OnDisable()
     {
-        QuestManager.OnQuestCompleted -= HandleQuestCompleted;
+        QuestManager.OnQuestProgressionChanged -= HandleQuestProgressionChanged;
         BlockModule.OnMinigameVisibilityChanged -= HandleMinigameVisibilityChanged;
     }
 
@@ -74,6 +73,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver) return;
 
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
         pauseMenuUI.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
@@ -90,6 +90,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver) return;
 
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
         pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
         isPaused = true;
@@ -119,6 +120,7 @@ public class GameManager : MonoBehaviour
 
     public void RestartDay()
     {
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
         Time.timeScale = 1f;
         isPaused = false;
         isGameOver = false;
@@ -130,6 +132,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadMenu()
     {
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
         Time.timeScale = 1f;
 
         if (AudioManager.Instance != null)
@@ -142,14 +145,17 @@ public class GameManager : MonoBehaviour
 
     public void QuitGame()
     {
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
         Application.Quit();
     }
 
-    private void HandleQuestCompleted()
+    private void HandleQuestProgressionChanged()
     {
-        completedQuestCount++;
+        int questProgressionCount = QuestManager.Instance != null
+            ? QuestManager.Instance.QuestProgressionCount
+            : 0;
 
-        if (finishLevelAfterQuest && completedQuestCount >= Mathf.Max(1, questsRequiredToFinishLevel))
+        if (finishLevelAfterQuest && questProgressionCount >= Mathf.Max(1, questsRequiredToFinishLevel))
         {
             CompleteLevel();
         }
@@ -228,7 +234,7 @@ public class GameManager : MonoBehaviour
             Reputation = StatsManager.Instance != null ? StatsManager.Instance.reputation : 0,
             Anger = StatsManager.Instance != null ? StatsManager.Instance.currentAnger : 0f,
             MaxAnger = StatsManager.Instance != null ? StatsManager.Instance.maxAnger : 100f,
-            CompletedQuests = completedQuestCount,
+            CompletedQuests = QuestManager.Instance != null ? QuestManager.Instance.CompletedQuestCount : 0,
             RequiredQuests = Mathf.Max(1, questsRequiredToFinishLevel),
             Hour = hour,
             Minute = minute

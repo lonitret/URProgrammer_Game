@@ -51,6 +51,7 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
     [SerializeField] private bool unlocksCoffeeAfterCompletion = true;
 
     private bool isCompleted = false;
+    private bool isDeclined = false;
 
     public string NpcName => npcName;
     public int RequiredCompletedQuestsToOffer => requiredCompletedQuestsToOffer;
@@ -82,10 +83,17 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        if (isDeclined)
+        {
+            AudioManager.Instance.PlayVoice();
+            DialogueManager.Instance.StartDialogue(GetDeclinedPostDialogue());
+            return;
+        }
+
         if (isCompleted)
         {
             DialogueManager.Instance.StartDialogue(postQuestDialogue);
-            AudioManager.Instance.PlaySFX(SoundType.NPCVoice);
+            AudioManager.Instance.PlayVoice();
             return;
         }
 
@@ -103,12 +111,12 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
         if (!CanOfferQuest())
         {
-            AudioManager.Instance.PlaySFX(SoundType.NPCVoice);
+            AudioManager.Instance.PlayVoice();
             DialogueManager.Instance.StartDialogue(GetLockedDialogue());
             return;
         }
 
-        AudioManager.Instance.PlaySFX(SoundType.NPCVoice);
+        AudioManager.Instance.PlayVoice();
         DialogueManager.Instance.StartDialogue(startQuestDialogue,
             onComplete: () =>
             {
@@ -133,6 +141,10 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
             },
             onDeclined: () =>
             {
+                isDeclined = true;
+                QuestManager.Instance.RegisterQuestRefused();
+                RefreshQuestMarker();
+
                 if (StatsManager.Instance != null)
                 {
                     StatsManager.Instance.ChangeReputation(-repPenalty);
@@ -147,7 +159,7 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
     private void CheckQuestConditions()
     {
-        AudioManager.Instance.PlaySFX(SoundType.NPCVoice);
+        AudioManager.Instance.PlayVoice();
 
         switch (questType)
         {
@@ -191,6 +203,8 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
     public string GetInteractionText()
     {
+        if (isDeclined) return "[E] Поговорить";
+
         if (QuestManager.Instance != null && QuestManager.Instance.isQuestActive)
         {
             if (!QuestManager.Instance.IsCurrentQuestGiver(this)) return "";
@@ -206,7 +220,7 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
     public bool ShouldShowAvailableQuestMarker()
     {
-        return !isCompleted && CanOfferQuest();
+        return !isCompleted && !isDeclined && CanOfferQuest();
     }
 
     public Transform GetObjectiveMarkerTarget()
@@ -239,7 +253,7 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
             foreach (NPCQuestGiver giver in questGivers)
             {
-                if (giver != null && !giver.isCompleted && QuestManager.Instance.IsCurrentQuestGiver(giver))
+                if (giver != null && !giver.isCompleted && !giver.isDeclined && QuestManager.Instance.IsCurrentQuestGiver(giver))
                 {
                     return giver;
                 }
@@ -251,7 +265,7 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
         NPCQuestGiver best = null;
         foreach (NPCQuestGiver giver in questGivers)
         {
-            if (giver == null || giver.isCompleted || !giver.CanOfferQuest()) continue;
+            if (giver == null || giver.isCompleted || giver.isDeclined || !giver.CanOfferQuest()) continue;
 
             if (best == null || giver.requiredCompletedQuestsToOffer < best.requiredCompletedQuestsToOffer)
             {
@@ -265,7 +279,7 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
     private bool CanOfferQuest()
     {
         return QuestManager.Instance == null
-            || QuestManager.Instance.CompletedQuestCount >= requiredCompletedQuestsToOffer;
+            || QuestManager.Instance.QuestProgressionCount >= requiredCompletedQuestsToOffer;
     }
 
     private void HandleQuestStateChanged(QuestManager.QuestUiState state)
@@ -320,6 +334,28 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
             sentences = new[]
             {
                 "Сначала закончи предыдущую задачу. Потом приходи, у меня тоже есть просьба."
+            }
+        };
+    }
+
+    private Dialogue GetDeclinedPostDialogue()
+    {
+        if (postQuestDialogue != null && postQuestDialogue.sentences != null && postQuestDialogue.sentences.Length > 0)
+        {
+            return postQuestDialogue;
+        }
+
+        if (declineQuestDialogue != null && declineQuestDialogue.sentences != null && declineQuestDialogue.sentences.Length > 0)
+        {
+            return declineQuestDialogue;
+        }
+
+        return new Dialogue
+        {
+            npcName = npcName,
+            sentences = new[]
+            {
+                "Ладно, тогда я попрошу кого-нибудь другого."
             }
         };
     }

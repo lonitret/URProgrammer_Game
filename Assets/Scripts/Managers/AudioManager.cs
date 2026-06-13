@@ -19,13 +19,24 @@ public class AudioManager : MonoBehaviour
     [Header("Список всех звуков в игре")]
     [SerializeField] private List<SoundData> soundList;
 
+    [Header("Громкость")]
+    [SerializeField, Range(0f, 1f)] private float musicVolume = 0.3f;
+    [SerializeField, Range(0f, 1f)] private float ambientVolume = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float sfxVolume = 0.8f;
+    [SerializeField, Range(0f, 1f)] private float voiceVolume = 0.8f;
+    [SerializeField, Range(0f, 1f)] private float minigameTickVolume = 0.45f;
+
     private AudioSource musicSource;
     private AudioSource ambientSource;
     private AudioSource sfxSource;
+    private AudioSource voiceSource;
     private AudioSource heartbeatSource;
     private AudioSource rumbleSource;
+    private AudioSource minigameTickSource;
 
     private Dictionary<SoundType, AudioClip> soundDictionary;
+    private float angerHeartbeatVolume;
+    private float angerRumbleVolume;
 
     private void Awake()
     {
@@ -58,6 +69,11 @@ public class AudioManager : MonoBehaviour
         //sfxSource.loop = false;
         //sfxSource.volume = 0.8f;
 
+        voiceSource = gameObject.AddComponent<AudioSource>();
+
+        minigameTickSource = gameObject.AddComponent<AudioSource>();
+        minigameTickSource.loop = true;
+
         heartbeatSource = gameObject.AddComponent<AudioSource>();
         heartbeatSource.loop = true;
         heartbeatSource.volume = 0f;
@@ -71,13 +87,17 @@ public class AudioManager : MonoBehaviour
             musicSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Music")[0];
             ambientSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Ambient")[0];
             sfxSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SFX")[0];
+            voiceSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SFX")[0];
+            minigameTickSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("SFX")[0];
 
             heartbeatSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
             rumbleSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
         }
 
-        musicSource.loop = true; musicSource.volume = 0.3f;
-        ambientSource.loop = true; ambientSource.volume = 0.2f;
+        LoadVolumeSettings();
+        musicSource.loop = true;
+        ambientSource.loop = true;
+        ApplyVolumeSettings();
 
         soundDictionary = new Dictionary<SoundType, AudioClip>();
         foreach (var sound in soundList)
@@ -115,6 +135,85 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    public void PlayVoice()
+    {
+        if (soundDictionary.TryGetValue(SoundType.NPCVoice, out AudioClip clip))
+        {
+            voiceSource.PlayOneShot(clip);
+        }
+        else
+        {
+            Debug.LogWarning($"Звук {SoundType.NPCVoice} не найден в AudioManager");
+        }
+    }
+
+    public void StartMinigameTick()
+    {
+        if (soundDictionary.TryGetValue(SoundType.MinigameTick, out AudioClip tick))
+        {
+            if (minigameTickSource.clip != tick)
+            {
+                minigameTickSource.clip = tick;
+            }
+
+            if (!minigameTickSource.isPlaying)
+            {
+                minigameTickSource.Play();
+            }
+        }
+    }
+
+    public void StopMinigameTick()
+    {
+        if (minigameTickSource != null && minigameTickSource.isPlaying)
+        {
+            minigameTickSource.Stop();
+        }
+    }
+
+    public float MusicVolume => musicVolume;
+    public float SfxVolume => sfxVolume;
+    public float VoiceVolume => voiceVolume;
+
+    public void SetMusicVolume(float value)
+    {
+        musicVolume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat("Audio.MusicVolume", musicVolume);
+        ApplyVolumeSettings();
+    }
+
+    public void SetSfxVolume(float value)
+    {
+        sfxVolume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat("Audio.SfxVolume", sfxVolume);
+        ApplyVolumeSettings();
+    }
+
+    public void SetVoiceVolume(float value)
+    {
+        voiceVolume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat("Audio.VoiceVolume", voiceVolume);
+        ApplyVolumeSettings();
+    }
+
+    private void LoadVolumeSettings()
+    {
+        musicVolume = PlayerPrefs.GetFloat("Audio.MusicVolume", musicVolume);
+        sfxVolume = PlayerPrefs.GetFloat("Audio.SfxVolume", sfxVolume);
+        voiceVolume = PlayerPrefs.GetFloat("Audio.VoiceVolume", voiceVolume);
+    }
+
+    private void ApplyVolumeSettings()
+    {
+        if (musicSource != null) musicSource.volume = musicVolume;
+        if (ambientSource != null) ambientSource.volume = ambientVolume;
+        if (sfxSource != null) sfxSource.volume = sfxVolume;
+        if (voiceSource != null) voiceSource.volume = voiceVolume;
+        if (minigameTickSource != null) minigameTickSource.volume = minigameTickVolume * sfxVolume;
+        if (heartbeatSource != null) heartbeatSource.volume = angerHeartbeatVolume * sfxVolume;
+        if (rumbleSource != null) rumbleSource.volume = angerRumbleVolume * sfxVolume;
+    }
+
     private void SetupAngerSounds()
     {
         if (soundDictionary.TryGetValue(SoundType.Heartbeat, out AudioClip heart))
@@ -145,8 +244,9 @@ public class AudioManager : MonoBehaviour
         float t = current / max;
         float smoothProgress = t * t * (3f - 2f * t);
 
-        heartbeatSource.volume = Mathf.Lerp(0f, 0.85f, smoothProgress);
-        rumbleSource.volume = Mathf.Lerp(0f, 0.65f, smoothProgress);
+        angerHeartbeatVolume = Mathf.Lerp(0f, 0.85f, smoothProgress);
+        angerRumbleVolume = Mathf.Lerp(0f, 0.65f, smoothProgress);
+        ApplyVolumeSettings();
 
         float cutoffValue = Mathf.Lerp(22000f, 650f, smoothProgress);
         if (mainMixer != null)

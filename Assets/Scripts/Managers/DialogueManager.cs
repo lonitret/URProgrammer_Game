@@ -3,17 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance { get; private set; }
-    public static event System.Action<bool> OnDialogueVisibilityChanged;
-
     [Header("UI элементы диалога")]
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI dialogueText;
-
     [Header("UI выбора квеста")]
     [SerializeField] private GameObject choicePanel;
     [SerializeField] private Button acceptButton;
@@ -22,6 +18,7 @@ public class DialogueManager : MonoBehaviour
     private System.Action onDialogueComplete;
     private System.Action onDialogueDeclined;
     private bool hasChoice;
+    private int npcVoiceLetterCounter;
     public bool IsWaitingForChoice => choicePanel != null && choicePanel.activeSelf;
     public bool IsDialogueActive => dialoguePanel != null && dialoguePanel.activeSelf;
     private void Awake()
@@ -37,7 +34,7 @@ public class DialogueManager : MonoBehaviour
     public void StartDialogue(Dialogue dialogue, System.Action onComplete = null, System.Action onDeclined = null)
     {
         dialoguePanel.SetActive(true);
-        OnDialogueVisibilityChanged?.Invoke(true);
+        RefreshCursorState();
         if (choicePanel != null) choicePanel.SetActive(false);
         nameText.text = dialogue.npcName;
         onDialogueComplete = onComplete;
@@ -65,9 +62,17 @@ public class DialogueManager : MonoBehaviour
     IEnumerator TypeSentence(string sentence)
     {
         dialogueText.text = "";
+        npcVoiceLetterCounter = 0;
         foreach (char letter in sentence.ToCharArray())
         {
             dialogueText.text += letter;
+            npcVoiceLetterCounter++;
+
+            if (!char.IsWhiteSpace(letter) && npcVoiceLetterCounter % 4 == 0)
+            {
+                AudioManager.Instance?.PlayVoice();
+            }
+
             yield return null;
         }
         if (sentences.Count == 0)
@@ -92,22 +97,32 @@ public class DialogueManager : MonoBehaviour
     }
     public void SelectAccept()
     {
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
         choicePanel.SetActive(false);
         dialoguePanel.SetActive(false);
-        OnDialogueVisibilityChanged?.Invoke(false);
+        RefreshCursorState();
         onDialogueComplete?.Invoke();
     }
     public void SelectDecline()
     {
+        AudioManager.Instance?.PlaySFX(SoundType.UIClick);
+        AudioManager.Instance?.PlaySFX(SoundType.ErrorDecline);
         choicePanel.SetActive(false);
         dialoguePanel.SetActive(false);
-        OnDialogueVisibilityChanged?.Invoke(false);
+        RefreshCursorState();
         onDialogueDeclined?.Invoke();
+    }
+    private void RefreshCursorState()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RefreshCursorState();
+        }
     }
     private void EndDialogue()
     {
         dialoguePanel.SetActive(false);
-        OnDialogueVisibilityChanged?.Invoke(false);
+        RefreshCursorState();
         if (onDialogueComplete != null && !IsWaitingForChoice)
         {
             onDialogueComplete.Invoke();

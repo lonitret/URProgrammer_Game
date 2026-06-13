@@ -13,5 +13,13 @@ public enum SoundType
 
     // Высокий гнев
     Heartbeat,
-    LowRumble
+    LowRumble,
+
+    // UI и события
+    UIClick,
+    MinigameTick,
+    Positive,
+    LevelComplete,
+    GameOver,
+    ErrorDecline
 }

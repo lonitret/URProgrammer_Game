@@ -132,6 +132,7 @@ public class BlockModule : InteractiveModule
         minigameTimer = minigameTimeLimit;
         feedbackMessage = "";
         SetMinigamePanel(true);
+        AudioManager.Instance?.StartMinigameTick();
 
         bool success = false;
 
@@ -157,9 +158,11 @@ public class BlockModule : InteractiveModule
         }
 
         isMinigameRunning = false;
+        AudioManager.Instance?.StopMinigameTick();
 
         if (success)
         {
+            AudioManager.Instance?.PlaySFX(SoundType.Positive);
             ConsumeRequiredItem();
             MarkQuestTaskAsDone();
             feedbackMessage = "Готово";
@@ -170,6 +173,7 @@ public class BlockModule : InteractiveModule
         }
         else
         {
+            AudioManager.Instance?.PlaySFX(SoundType.ErrorDecline);
             feedbackMessage = "Провал";
             UpdateMinigameUi();
             Debug.Log("Ремонт провален.");
@@ -198,6 +202,7 @@ public class BlockModule : InteractiveModule
             }
             else if (WasAnyRepairKeyPressed())
             {
+                AudioManager.Instance?.PlaySFX(SoundType.ErrorDecline);
                 feedbackMessage = "Не та клавиша";
                 UpdateMinigameUi();
                 yield return new WaitForSeconds(0.35f);
@@ -233,6 +238,7 @@ public class BlockModule : InteractiveModule
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 bool hit = Mathf.Abs(timingMarkerPosition - 0.5f) <= timingGreenZoneSize * 0.5f;
+                AudioManager.Instance?.PlaySFX(hit ? SoundType.Positive : SoundType.ErrorDecline);
                 feedbackMessage = hit ? "Попадание" : "Мимо";
                 UpdateMinigameUi();
                 yield return new WaitForSeconds(0.25f);
@@ -456,6 +462,7 @@ public class BlockModule : InteractiveModule
         if (!isMinigameRunning || minigameType != RepairMinigameType.WireConnect) return;
         if (selectedLeftWire < 0)
         {
+            AudioManager.Instance?.PlaySFX(SoundType.ErrorDecline);
             feedbackMessage = "Сначала выбери провод слева";
             UpdateMinigameUi();
             return;
@@ -466,12 +473,14 @@ public class BlockModule : InteractiveModule
         bool isCorrect = leftWires[selectedLeftWire] == rightWires[index];
         if (isCorrect)
         {
+            AudioManager.Instance?.PlaySFX(SoundType.Positive);
             connectedWires[selectedLeftWire] = true;
             selectedLeftWire = -1;
             feedbackMessage = "Соединено";
         }
         else
         {
+            AudioManager.Instance?.PlaySFX(SoundType.ErrorDecline);
             selectedLeftWire = -1;
             feedbackMessage = "Не тот провод";
         }

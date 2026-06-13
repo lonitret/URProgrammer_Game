@@ -22,6 +22,8 @@ public class QuestManager : MonoBehaviour
     public bool isTaskCompleted = false;
     public bool isCoffeeMachineRepaired = false;
     public int CompletedQuestCount { get; private set; }
+    public int RefusedQuestCount { get; private set; }
+    public int QuestProgressionCount => CompletedQuestCount + RefusedQuestCount;
 
     private NPCQuestGiver currentGiver;
     private Actor currentTargetActor;
@@ -34,6 +36,7 @@ public class QuestManager : MonoBehaviour
     public static event Action<string> OnQuestUpdated;
     public static event Action<QuestUiState> OnQuestStateChanged;
     public static event Action OnQuestCompleted;
+    public static event Action OnQuestProgressionChanged;
 
     public bool IsCurrentQuestGiver(NPCQuestGiver giver)
     {
@@ -146,6 +149,14 @@ public class QuestManager : MonoBehaviour
         };
 
         PublishQuestState();
+        OnQuestProgressionChanged?.Invoke();
+    }
+
+    public void RegisterQuestRefused()
+    {
+        RefusedQuestCount++;
+        PublishQuestState();
+        OnQuestProgressionChanged?.Invoke();
     }
 
     public void NotifyQuestTurnedIn()
