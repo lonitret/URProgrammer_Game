@@ -5,9 +5,9 @@ public class Actor : MonoBehaviour, IInteractable
 {
     [SerializeField] private List<InteractiveModule> modules;
     [SerializeField] public bool needsQuest = true;
-    [SerializeField] private bool canInteractAfterCoffeeUnlock = true;
+    [SerializeField] private bool canInteractAfterCoffeeUnlock = false;
 
-    public bool CanInteractAfterCoffeeUnlock => canInteractAfterCoffeeUnlock;
+    public bool CanInteractAfterCoffeeUnlock => canInteractAfterCoffeeUnlock && HasCoffeeModule();
 
     public void Interact()
     {
@@ -15,7 +15,7 @@ public class Actor : MonoBehaviour, IInteractable
         bool isCurrentQuestTarget = QuestManager.Instance != null && QuestManager.Instance.IsCurrentQuestTarget(this);
         bool permanentDone = QuestManager.Instance != null
             && QuestManager.Instance.isCoffeeMachineRepaired
-            && canInteractAfterCoffeeUnlock;
+            && CanInteractAfterCoffeeUnlock;
 
         if (needsQuest && hasActiveQuest && !isCurrentQuestTarget)
         {
@@ -48,7 +48,7 @@ public class Actor : MonoBehaviour, IInteractable
         bool taskDone = QuestManager.Instance != null && QuestManager.Instance.isTaskCompleted && isCurrentQuestTarget;
         bool permanentDone = QuestManager.Instance != null
             && QuestManager.Instance.isCoffeeMachineRepaired
-            && canInteractAfterCoffeeUnlock;
+            && CanInteractAfterCoffeeUnlock;
 
         if (taskDone) return "[E] Вернуться к NPC";
         if (needsQuest && hasActiveQuest && !isCurrentQuestTarget) return "";
@@ -56,5 +56,17 @@ public class Actor : MonoBehaviour, IInteractable
         if (!needsQuest) return "[E] Взаимодействовать";
 
         return "[E] Починить объект";
+    }
+
+    private bool HasCoffeeModule()
+    {
+        if (modules == null) return false;
+
+        foreach (InteractiveModule module in modules)
+        {
+            if (module is CoffeeMachineModule) return true;
+        }
+
+        return GetComponentInChildren<CoffeeMachineModule>() != null;
     }
 }

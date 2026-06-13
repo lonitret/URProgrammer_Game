@@ -21,12 +21,14 @@ public class QuestManager : MonoBehaviour
     public bool isQuestActive = false;
     public bool isTaskCompleted = false;
     public bool isCoffeeMachineRepaired = false;
+    public int CompletedQuestCount { get; private set; }
 
     private NPCQuestGiver currentGiver;
     private Actor currentTargetActor;
     private int pendingRep;
     private float pendingAnger;
     private bool currentQuestUnlocksCoffee;
+    private string currentReturnStepText;
     private QuestUiState currentUiState;
 
     public static event Action<string> OnQuestUpdated;
@@ -57,13 +59,18 @@ public class QuestManager : MonoBehaviour
         string description,
         NPCQuestGiver giver,
         bool unlocksCoffeeAfterCompletion = false,
-        Actor targetActor = null)
+        Actor targetActor = null,
+        string firstStepText = "",
+        string returnStepText = "")
     {
         isQuestActive = true;
         isTaskCompleted = false;
         currentGiver = giver;
         currentTargetActor = targetActor;
         currentQuestUnlocksCoffee = unlocksCoffeeAfterCompletion;
+        currentReturnStepText = !string.IsNullOrWhiteSpace(returnStepText)
+            ? returnStepText
+            : giver != null ? $"Вернись к {giver.NpcName}" : "Вернись к NPC";
         currentQuestDescription = description;
 
         currentUiState = new QuestUiState
@@ -71,7 +78,7 @@ public class QuestManager : MonoBehaviour
             HasActiveQuest = true,
             Title = description,
             GiverName = giver != null ? giver.NpcName : "NPC",
-            CurrentStep = "Выполни задание",
+            CurrentStep = !string.IsNullOrWhiteSpace(firstStepText) ? firstStepText : "Выполни задание",
             Status = "В процессе",
             CompletedSteps = 0,
             TotalSteps = 1
@@ -87,9 +94,7 @@ public class QuestManager : MonoBehaviour
         isTaskCompleted = true;
         pendingRep = rep;
         pendingAnger = anger;
-        currentQuestDescription = currentGiver != null
-            ? $"Вернись к {currentGiver.NpcName}"
-            : "Вернись к NPC";
+        currentQuestDescription = currentReturnStepText;
 
         currentUiState.HasActiveQuest = true;
         currentUiState.CurrentStep = currentQuestDescription;
@@ -108,6 +113,8 @@ public class QuestManager : MonoBehaviour
 
     public void GiveRewardAndFinish()
     {
+        CompletedQuestCount++;
+
         if (StatsManager.Instance != null)
         {
             StatsManager.Instance.ChangeReputation(pendingRep);
@@ -125,6 +132,7 @@ public class QuestManager : MonoBehaviour
         if (currentGiver != null) currentGiver.MarkAsCompleted();
         currentGiver = null;
         currentTargetActor = null;
+        currentReturnStepText = "";
 
         currentUiState = new QuestUiState
         {
@@ -143,6 +151,7 @@ public class QuestManager : MonoBehaviour
     public void NotifyQuestTurnedIn()
     {
         OnQuestCompleted?.Invoke();
+        PublishQuestState();
     }
 
     private void PublishQuestState()

@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject gameOverMenuUI;
     [SerializeField] private bool finishLevelAfterQuest = true;
     [SerializeField] private int questsRequiredToFinishLevel = 1;
-    [SerializeField] private string levelCompleteMessage = "Задание выполнено!";
+    [SerializeField] private string levelCompleteMessage = "День пройден";
     [SerializeField] private string gameOverMessage = "Нервный срыв!";
     [SerializeField] private string dayEndedMessage = "Рабочий день окончен!";
 
