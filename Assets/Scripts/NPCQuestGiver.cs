@@ -85,7 +85,6 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
     {
         if (isDeclined)
         {
-            AudioManager.Instance.PlayVoice();
             DialogueManager.Instance.StartDialogue(GetDeclinedPostDialogue());
             return;
         }
@@ -93,7 +92,6 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
         if (isCompleted)
         {
             DialogueManager.Instance.StartDialogue(postQuestDialogue);
-            AudioManager.Instance.PlayVoice();
             return;
         }
 
@@ -111,12 +109,10 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
         if (!CanOfferQuest())
         {
-            AudioManager.Instance.PlayVoice();
             DialogueManager.Instance.StartDialogue(GetLockedDialogue());
             return;
         }
 
-        AudioManager.Instance.PlayVoice();
         DialogueManager.Instance.StartDialogue(startQuestDialogue,
             onComplete: () =>
             {
@@ -159,7 +155,6 @@ public class NPCQuestGiver : MonoBehaviour, IInteractable
 
     private void CheckQuestConditions()
     {
-        AudioManager.Instance.PlayVoice();
 
         switch (questType)
         {

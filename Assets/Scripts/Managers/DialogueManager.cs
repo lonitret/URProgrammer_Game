@@ -68,7 +68,7 @@ public class DialogueManager : MonoBehaviour
             dialogueText.text += letter;
             npcVoiceLetterCounter++;
 
-            if (!char.IsWhiteSpace(letter) && npcVoiceLetterCounter % 4 == 0)
+            if (!GameManager.isGameOver && !char.IsWhiteSpace(letter) && npcVoiceLetterCounter % 4 == 0)
             {
                 AudioManager.Instance?.PlayVoice();
             }
@@ -118,6 +118,17 @@ public class DialogueManager : MonoBehaviour
         {
             GameManager.Instance.RefreshCursorState();
         }
+    }
+    public void ForceCloseDialogue()
+    {
+        StopAllCoroutines();
+        sentences.Clear();
+        onDialogueComplete = null;
+        onDialogueDeclined = null;
+        hasChoice = false;
+        if (choicePanel != null) choicePanel.SetActive(false);
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        RefreshCursorState();
     }
     private void EndDialogue()
     {

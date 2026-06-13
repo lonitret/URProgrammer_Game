@@ -18,9 +18,16 @@ public class AudioSettingsUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (musicSlider != null) musicSlider.onValueChanged.RemoveAllListeners();
-        if (sfxSlider != null) sfxSlider.onValueChanged.RemoveAllListeners();
-        if (voiceSlider != null) voiceSlider.onValueChanged.RemoveAllListeners();
+        if (AudioManager.Instance == null) return;
+
+        if (musicSlider != null)
+            musicSlider.onValueChanged.RemoveListener(AudioManager.Instance.SetMusicVolume);
+
+        if (sfxSlider != null)
+            sfxSlider.onValueChanged.RemoveListener(AudioManager.Instance.SetSfxVolume);
+
+        if (voiceSlider != null)
+            voiceSlider.onValueChanged.RemoveListener(AudioManager.Instance.SetVoiceVolume);
     }
 
     private void SetupSlider(Slider slider, float value, UnityEngine.Events.UnityAction<float> onChanged)

@@ -168,6 +168,11 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         Time.timeScale = 0f;
 
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.ForceCloseDialogue();
+        }
+
         if (gameOverMenuUI != null)
         {
             SetEndPanelText(message);
