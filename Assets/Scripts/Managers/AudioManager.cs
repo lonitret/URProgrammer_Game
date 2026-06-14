@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
@@ -23,7 +24,6 @@ public class AudioManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float musicVolume = 0.3f;
     [SerializeField, Range(0f, 1f)] private float ambientVolume = 0.2f;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 0.8f;
-    [SerializeField, Range(0f, 1f)] private float voiceVolume = 0.8f;
     [SerializeField, Range(0f, 1f)] private float minigameTickVolume = 0.45f;
 
     private AudioSource musicSource;
@@ -37,6 +37,7 @@ public class AudioManager : MonoBehaviour
     private Dictionary<SoundType, AudioClip> soundDictionary;
     private float angerHeartbeatVolume;
     private float angerRumbleVolume;
+    private bool isInitialized;
 
     private void Awake()
     {
@@ -106,20 +107,35 @@ public class AudioManager : MonoBehaviour
 
         StartBackgroundSounds();
         SetupAngerSounds();
+        isInitialized = true;
     }
 
     private void StartBackgroundSounds()
     {
         if (soundDictionary.TryGetValue(SoundType.BackgroundMusic, out AudioClip music))
         {
-            musicSource.clip = music;
-            musicSource.Play();
+            if (musicSource.clip != music)
+            {
+                musicSource.clip = music;
+            }
+
+            if (!musicSource.isPlaying)
+            {
+                musicSource.Play();
+            }
         }
 
         if (soundDictionary.TryGetValue(SoundType.OfficeAmbient, out AudioClip ambient))
         {
-            ambientSource.clip = ambient;
-            ambientSource.Play();
+            if (ambientSource.clip != ambient)
+            {
+                ambientSource.clip = ambient;
+            }
+
+            if (!ambientSource.isPlaying)
+            {
+                ambientSource.Play();
+            }
         }
     }
 
@@ -173,7 +189,7 @@ public class AudioManager : MonoBehaviour
 
     public float MusicVolume => musicVolume;
     public float SfxVolume => sfxVolume;
-    public float VoiceVolume => voiceVolume;
+    public float VoiceVolume => sfxVolume;
 
     public void SetMusicVolume(float value)
     {
@@ -191,16 +207,13 @@ public class AudioManager : MonoBehaviour
 
     public void SetVoiceVolume(float value)
     {
-        voiceVolume = Mathf.Clamp01(value);
-        PlayerPrefs.SetFloat("Audio.VoiceVolume", voiceVolume);
-        ApplyVolumeSettings();
+        SetSfxVolume(value);
     }
 
     private void LoadVolumeSettings()
     {
         musicVolume = PlayerPrefs.GetFloat("Audio.MusicVolume", musicVolume);
         sfxVolume = PlayerPrefs.GetFloat("Audio.SfxVolume", sfxVolume);
-        voiceVolume = PlayerPrefs.GetFloat("Audio.VoiceVolume", voiceVolume);
     }
 
     private void ApplyVolumeSettings()
@@ -208,7 +221,7 @@ public class AudioManager : MonoBehaviour
         if (musicSource != null) musicSource.volume = musicVolume;
         if (ambientSource != null) ambientSource.volume = ambientVolume;
         if (sfxSource != null) sfxSource.volume = sfxVolume;
-        if (voiceSource != null) voiceSource.volume = voiceVolume;
+        if (voiceSource != null) voiceSource.volume = sfxVolume;
         if (minigameTickSource != null) minigameTickSource.volume = minigameTickVolume * sfxVolume;
         if (heartbeatSource != null) heartbeatSource.volume = angerHeartbeatVolume * sfxVolume;
         if (rumbleSource != null) rumbleSource.volume = angerRumbleVolume * sfxVolume;
@@ -218,24 +231,74 @@ public class AudioManager : MonoBehaviour
     {
         if (soundDictionary.TryGetValue(SoundType.Heartbeat, out AudioClip heart))
         {
-            heartbeatSource.clip = heart;
-            heartbeatSource.Play();
+            if (heartbeatSource.clip != heart)
+            {
+                heartbeatSource.clip = heart;
+            }
+
+            if (!heartbeatSource.isPlaying)
+            {
+                heartbeatSource.Play();
+            }
         }
         if (soundDictionary.TryGetValue(SoundType.LowRumble, out AudioClip rumble))
         {
-            rumbleSource.clip = rumble;
-            rumbleSource.Play();
+            if (rumbleSource.clip != rumble)
+            {
+                rumbleSource.clip = rumble;
+            }
+
+            if (!rumbleSource.isPlaying)
+            {
+                rumbleSource.Play();
+            }
         }
     }
 
     private void OnEnable()
     {
         StatsManager.OnAngerChanged += SetAngerEffects;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
     private void OnDisable()
     {
         StatsManager.OnAngerChanged -= SetAngerEffects;
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!isInitialized) return;
+
+        ResetSceneAudioState();
+    }
+
+    public void ResetSceneAudioState()
+    {
+        StopMinigameTick();
+
+        if (voiceSource != null)
+        {
+            voiceSource.Stop();
+        }
+
+        angerHeartbeatVolume = 0f;
+        angerRumbleVolume = 0f;
+
+        if (musicSource != null)
+        {
+            musicSource.pitch = 1f;
+        }
+
+        if (mainMixer != null)
+        {
+            mainMixer.SetFloat("AmbientCutoff", 22000f);
+        }
+
+        ApplyVolumeSettings();
+        StartBackgroundSounds();
+        SetupAngerSounds();
     }
 
     public void SetAngerEffects(float current, float max)
