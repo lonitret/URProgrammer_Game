@@ -34,7 +34,7 @@ and avoid a nervous breakdown.
 ## 📦 Release
 
 A playable Windows build is available in
-[Releases](./releases).
+[Releases](https://github.com/lonitret/URProgrammer_Game/releases).
 
 ## 📚 Project
 
